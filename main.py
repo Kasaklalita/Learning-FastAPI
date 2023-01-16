@@ -11,3 +11,13 @@ def index():
 @app.get('/about')
 def about():
     return {'data': 'about page'}
+
+
+@app.get('/blogs/{id}')
+def show(id: int):
+    return {'data': id}
+
+
+@app.get('blogs/unpublished')
+def unpublished():
+    return {'data': 'unpublished blogs'}
