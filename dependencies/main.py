@@ -1,31 +1,20 @@
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Cookie
 
 app = FastAPI()
 
-fake_items_db = [{"item_name": "Foo"}, {
-    "item_name": "Bar"}, {"item_name": "Baz"}]
+
+def query_extractor(q: str | None = None):
+    return q
 
 
-class CommonQueryParams:
-    def __init__(self, q: str | None = None, skip: int = 0, limit: int = 100):
-        self.q = q
-        self.skip = skip
-        self.limit = limit
-
-# async def common_parameters(q: str | None = None, skip: int = 0, limit: int = 100):
-#     return {'q': q, 'skip': skip, 'limit': limit}
+def query_or_cookie_extractor(
+    q: str = Depends(query_extractor), last_query: str | None = Cookie(default=None)
+):
+    if not q:
+        return last_query
+    return q
 
 
-@app.get('/items/')
-async def read_items(commons: CommonQueryParams = Depends()):
-    response = {}
-    if commons.q:
-        response.update({"q": commons.q})
-    items = fake_items_db[commons.skip: commons.skip + commons.limit]
-    response.update({"items": items})
-    return response
-
-
-# @app.get('/users/')
-# async def read_users(commons: dict = Depends(common_parameters)):
-#     return commons
+@app.get("/items/")
+async def read_query(query_or_default: str = Depends(query_or_cookie_extractor)):
+    return {"q_or_cookie": query_or_default}
